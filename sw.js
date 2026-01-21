@@ -1,61 +1,56 @@
-// sw.js — Offline-first para tu app (GitHub Pages / HTTPS)
-const CACHE_VERSION = "v1.0.0";
-const CACHE_NAME = `bioparque-parte-diario-${CACHE_VERSION}`;
+// sw.js — Service Worker base (Apps vidrio + fondo)
+// Reutilizable para todas las apps del proyecto
 
-// Ajustá esta lista según los archivos reales del proyecto.
-// Si usás un solo index con <style> y <script> internos, esto alcanza.
-const ASSETS = [
+const CACHE_VERSION = "v1"; 
+const CACHE_NAME = `lioapp-cache-${CACHE_VERSION}`;
+
+const ASSETS_TO_CACHE = [
   "./",
   "./index.html",
-  "./fondo.jpg",
   "./manifest.webmanifest",
+  "./fondo.jpg",
   "./icon-192.png",
   "./icon-512.png"
 ];
 
-// Instalación: precache de assets
-self.addEventListener("install", (event) => {
+// Instala y cachea archivos base
+self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
   );
   self.skipWaiting();
 });
 
-// Activación: limpia cachés viejos
-self.addEventListener("activate", (event) => {
+// Activa y limpia cachés viejos
+self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then((keys) =>
+    caches.keys().then(keys =>
       Promise.all(
-        keys.map((key) => (key !== CACHE_NAME ? caches.delete(key) : null))
+        keys.map(key => key !== CACHE_NAME && caches.delete(key))
       )
     )
   );
   self.clients.claim();
 });
 
-// Estrategia: Cache-first para navegación y assets
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
-
-  // Solo GET
-  if (req.method !== "GET") return;
+// Estrategia offline-first
+self.addEventListener("fetch", event => {
+  if (event.request.method !== "GET") return;
 
   event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(req)
-        .then((res) => {
-          // Guardar en cache respuestas válidas
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-          return res;
-        })
-        .catch(() => {
-          // Fallback simple: si es navegación, devuelve el index
-          if (req.mode === "navigate") return caches.match("./index.html");
-          throw new Error("Offline and not cached");
-        });
+    caches.match(event.request).then(cached => {
+      return (
+        cached ||
+        fetch(event.request)
+          .then(response => {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache =>
+              cache.put(event.request, copy)
+            );
+            return response;
+          })
+          .catch(() => caches.match("./index.html"))
+      );
     })
   );
 });
