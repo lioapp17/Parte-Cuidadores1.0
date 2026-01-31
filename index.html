@@ -1,0 +1,2233 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PARTE DIARIO – Bioparque</title>
+  
+  <!-- Icono PWA / pestaña -->
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#6ea800" />
+<style>
+    :root{
+      /* GRISES + VERDE CLARO (alto contraste y lectura) */
+      --bg:#f1f3f5;
+      --card:#ffffff;
+      --line:#c9ced6;
+      --txt:#0f172a;
+      --mut:#3f4a5a;
+      --acc:#0f7a2a;  /* verde más firme */
+      --ok:#0f7a2a;
+      --warn:#b45309;
+      --bad:#b91c1c;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:
+        linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+      color:var(--txt);
+    }
+
+    /* LOGIN */
+    .login-screen{
+      position:fixed;inset:0;
+      display:flex;align-items:center;justify-content:center;
+      background:radial-gradient(900px 600px at 50% 0%,rgba(255,255,255,.95) 0%,rgba(246,243,238,.98) 55%);
+      z-index:20;
+    }
+    .login-card{
+      background:rgba(255,255,255,.96);
+      border-radius:18px;
+      border:1px solid var(--line);
+      padding:18px 16px 14px;
+      max-width:380px;
+      width:100%;
+      box-shadow:0 18px 45px rgba(31,41,55,.18);
+    }
+    .login-title{font-size:16px;margin:0 0 4px 0}
+    .login-sub{font-size:12px;color:var(--mut);margin-bottom:10px;line-height:1.4}
+    .login-field{margin-bottom:8px}
+    .login-field label{display:block;font-size:12px;color:var(--mut);margin-bottom:4px}
+    .login-field input{
+      width:100%;border-radius:12px;border:1px solid var(--line);
+      background:#ffffff;color:var(--txt);padding:8px 10px;font-size:13px;outline:none;
+    }
+    .login-field input:focus{
+      border-color:rgba(37,99,235,.55);
+      box-shadow:0 0 0 3px rgba(37,99,235,.18);
+    }
+    .login-btn{
+      width:100%;margin-top:6px;
+      border-radius:12px;border:1px solid rgba(134,239,172,.75);
+      background:linear-gradient(135deg,rgba(74,222,128,.24),rgba(34,197,94,.22));
+      color:var(--txt);padding:9px 0;font-size:13px;cursor:pointer;
+    }
+    .login-note{font-size:11px;color:var(--mut);margin-top:8px;line-height:1.4}
+    .login-note b{color:var(--txt)}
+
+    /* APP LAYOUT */
+    .wrap{
+      max-width:1320px;
+      margin:0 auto;
+      padding:16px 14px 24px;
+    }
+    .top{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .brand{display:flex;gap:10px;align-items:center}
+    .dot{
+      width:12px;height:12px;border-radius:999px;
+      background:var(--acc);
+      box-shadow:0 0 18px rgba(37,99,235,.35);
+    }
+    h1{font-size:18px;margin:0}
+    .sub{font-size:12px;color:var(--mut);margin-top:2px;line-height:1.4}
+
+    .row{
+      display:grid;
+      grid-template-columns:minmax(0,1.05fr) minmax(0,1.05fr);
+      gap:16px;
+      margin-top:16px;
+    }
+    @media (max-width:1000px){
+      .row{grid-template-columns:1fr}
+    }
+
+    .card{
+      background:rgba(255,255,255,.96);
+      border-radius:16px;
+      border:1px solid var(--line);
+      padding:14px 14px 16px;
+      box-shadow:0 10px 28px rgba(31,41,55,.12);
+    }
+    .card h2{font-size:14px;margin:0 0 8px 0}
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width:640px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    label{display:block;font-size:12px;color:var(--mut);margin-bottom:4px}
+
+    input,select,textarea{
+      width:100%;
+      border-radius:12px;
+      border:1px solid var(--line);
+      padding:8px 10px;
+      background:#ffffff;
+      color:var(--txt);
+      font-size:13px;
+      outline:none;
+    }
+    textarea{min-height:72px;resize:vertical}
+    .textarea-large{min-height:180px;}
+    input:focus,select:focus,textarea:focus{
+      border-color:rgba(37,99,235,.55);
+      box-shadow:0 0 0 3px rgba(37,99,235,.18);
+    }
+
+    .btns{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    button{
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#ffffff;
+      color:var(--txt);
+      font-size:13px;
+      padding:8px 12px;
+      cursor:pointer;
+    }
+    button.primary{
+      border-color:rgba(37,99,235,.55);
+      background:rgba(37,99,235,.10);
+    }
+    button.ok{
+      border-color:rgba(22,163,74,.45);
+      background:rgba(22,163,74,.10);
+    }
+    button.danger{
+      border-color:rgba(220,38,38,.45);
+      background:rgba(220,38,38,.10);
+    }
+    button:hover{filter:brightness(1.04)}
+
+    .pill{
+      font-size:12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      padding:6px 10px;
+      background:#ffffff;
+      color:var(--mut);
+    }
+    .pill b{color:var(--txt)}
+    .top-right{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .hr{height:1px;background:var(--line);margin:10px 0}
+    .small{font-size:12px;color:var(--mut);line-height:1.35}
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:8px;
+    }
+    .item{
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#ffffff;
+      padding:10px;
+    }
+    .item-head{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:4px;
+    }
+    .tags{display:flex;gap:6px;flex-wrap:wrap}
+
+    .tag{
+      font-size:11px;
+      border-radius:999px;
+      padding:3px 7px;
+      border:1px solid var(--line);
+      color:var(--mut);
+      background:rgba(31,41,55,.04);
+    }
+    .tag.sat{
+      border-color:rgba(74,222,128,.7);
+      color:#bbf7d0;
+    }
+    .tag.sun{
+      border-color:rgba(250,204,21,.75);
+      color:#fef9c3;
+    }
+    .tag.sector{
+      border-color:rgba(45,212,191,.65);
+      color:#a5f3fc;
+    }
+    .tag.cuid{
+      border-color:rgba(74,222,128,.7);
+      color:#bbf7d0;
+    }
+
+    .titulo{font-size:13px;margin:0}
+    .campo{font-size:12px;color:var(--mut);margin-top:4px}
+    .campo b{color:var(--txt)}
+
+    select.filter{max-width:220px}
+
+    .right-top-controls{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+      justify-content:space-between;
+    }
+
+    /* MEMORY BASE */
+    .memory-panel{
+      margin-top:10px;
+      border-radius:14px;
+      border:1px dashed rgba(37,99,235,.45);
+      background:rgba(37,99,235,.04);
+      padding:10px;
+    }
+    .memory-panel textarea{
+      font-family:ui-monospace,Menlo,Consolas,monospace;
+      font-size:11px;
+      line-height:1.35;
+      background:#ffffff;
+    }
+
+    /* PANEL COORDINACIÓN */
+    .coord-panel{
+      margin-top:10px;
+      border-radius:14px;
+      border:1px solid rgba(37,99,235,.35);
+      background:rgba(37,99,235,.04);
+      padding:10px;
+    }
+    .coord-panel h3{
+      margin:0 0 6px 0;
+      font-size:13px;
+    }
+    .coord-panel textarea{
+      width:100%;
+      min-height:220px;
+      resize:vertical;
+      font-family:ui-monospace,Menlo,Consolas,monospace;
+      font-size:11px;
+      line-height:1.4;
+      background:#ffffff;
+    }
+  
+/* Modal lectura (solo lectura, no altera el layout) */
+.modal{
+  position:fixed; inset:0;
+  background:rgba(17,24,39,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  z-index:1000;
+}
+.modal.show{ display:flex; }
+.modal-card{
+  width:min(920px, 96vw);
+  max-height:90vh;
+  overflow:auto;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+.modal-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  padding:14px 14px 10px;
+  border-bottom:1px solid var(--line);
+}
+.modal-title{ font-weight:700; font-size:16px; color:var(--txt); }
+.modal-sub{ font-size:12px; color:var(--mut); margin-top:2px; }
+.modal-body{
+  padding:14px;
+  color:var(--txt);
+  font-size:13px;
+  line-height:1.55;
+}
+.modal-body h4{ margin:10px 0 6px; font-size:13px; }
+.modal-body .block{
+  background:rgba(47,143,78,.04);
+  border:1px solid rgba(47,143,78,.20);
+  border-radius:12px;
+  padding:10px;
+  margin:8px 0;
+  white-space:pre-wrap;
+}
+.item.clickable{ cursor:pointer; }
+.item.clickable:hover{ filter:brightness(0.99); }
+
+
+/* Modal lectura (clic en un parte del listado) */
+.modal{
+  position:fixed; inset:0;
+  background:rgba(17,24,39,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  z-index:1000;
+}
+.modal.show{ display:flex; }
+.modal-card{
+  width:min(920px, 96vw);
+  max-height:90vh;
+  overflow:auto;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+.modal-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  padding:14px 14px 10px;
+  border-bottom:1px solid var(--line);
+}
+.modal-title{ font-weight:700; font-size:16px; color:var(--txt); }
+.modal-sub{ font-size:12px; color:var(--mut); margin-top:2px; }
+.modal-body{
+  padding:14px;
+  color:var(--txt);
+  font-size:13px;
+  line-height:1.55;
+}
+.modal-body h4{ margin:10px 0 6px; font-size:13px; }
+.modal-body .block{
+  background:rgba(47,143,78,.05);
+  border:1px solid rgba(47,143,78,.22);
+  border-radius:12px;
+  padding:10px;
+  margin:8px 0;
+  white-space:pre-wrap;
+}
+.item.clickable{ cursor:pointer; }
+.item.clickable:hover{ outline:2px solid rgba(47,143,78,.20); }
+
+
+::placeholder{ color:rgba(85,96,112,.85); }
+
+/* Mejor contraste en etiquetas/verdes */
+.tag.ok, .pill.ok{
+  border-color: rgba(15,122,42,.55) !important;
+  background: rgba(15,122,42,.14) !important;
+  color: #0f2a14 !important;
+}
+.badge-user{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:3px 8px;border-radius:999px;
+  border:1px solid rgba(15,122,42,.55);
+  background: rgba(15,122,42,.14);
+  color:#0f2a14;
+  font-size:12px;
+}
+.item .meta-strong{ color:var(--txt); font-weight:600; }
+.item .meta-soft{ color:var(--mut); }
+
+
+/* Más contraste en tags (cuidador/sector) */
+.tag.cuid{
+  border-color: rgba(15,122,42,.55) !important;
+  background: rgba(15,122,42,.16) !important;
+  color:#0f2a14 !important;
+  font-weight:600;
+}
+.tag.sector{
+  border-color: rgba(15,122,42,.35) !important;
+  background: rgba(15,122,42,.08) !important;
+}
+
+
+
+/* ===== Tema "ArgentiNat" (inspirado en la captura) — SOLO ESTÉTICA ===== */
+:root{
+  --bg:#f4f6f7;
+  --card:#ffffff;
+  --line:#d9dee3;
+
+  --txt:#1f2937;
+  --mut:#5b6572;
+
+  --green:#6ea800;      /* banda verde */
+  --greenDark:#5a8f00;  /* hover */
+  --greenInk:#0f2a14;   /* texto verde */
+  --gold:#d7a100;       /* panel dorado */
+  --goldDark:#bf8f00;
+  --shadow: 0 1px 2px rgba(0,0,0,.06), 0 10px 24px rgba(0,0,0,.08);
+}
+
+html,body{
+  background:var(--bg) !important;
+  color:var(--txt) !important;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji",sans-serif !important;
+}
+
+/* Layout más ancho (no angosto) */
+main{
+  max-width: 1200px !important;
+  padding-left: 18px !important;
+  padding-right: 18px !important;
+}
+
+/* Tarjetas/paneles */
+.card,.panel,.box,.item,.msg,.event,.section{
+  background:var(--card) !important;
+  border:1px solid var(--line) !important;
+  border-radius:14px !important;
+  box-shadow:none;
+}
+
+/* List items: hover suave */
+.item{
+  transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+}
+.item:hover{
+  box-shadow: var(--shadow);
+  border-color: rgba(110,168,0,.35) !important;
+}
+
+/* Tipografía */
+h1,h2,h3{ color:var(--txt) !important; letter-spacing:.2px; }
+.small,.muted,.hint{ color:var(--mut) !important; }
+::placeholder{ color: rgba(91,101,114,.85) !important; }
+
+/* Inputs */
+input,select,textarea{
+  background:#fff !important;
+  color:var(--txt) !important;
+  border:1px solid var(--line) !important;
+  border-radius:12px !important;
+  outline:none !important;
+}
+input:focus,select:focus,textarea:focus{
+  border-color: rgba(110,168,0,.55) !important;
+  box-shadow: 0 0 0 3px rgba(110,168,0,.18) !important;
+}
+
+/* Botones */
+button,.btn,.primary,.secondary{
+  border-radius:12px !important;
+  font-weight:700 !important;
+  letter-spacing:.2px;
+}
+.primary{
+  background: var(--green) !important;
+  color:#fff !important;
+  border:1px solid rgba(0,0,0,.06) !important;
+}
+.primary:hover{ background: var(--greenDark) !important; }
+.secondary{
+  background:#eef1f3 !important;
+  border:1px solid var(--line) !important;
+  color:var(--txt) !important;
+}
+.secondary:hover{ background:#e6eaee !important; }
+
+/* Pills/tags */
+.tag,.pill,.badge-user{
+  border-radius:999px !important;
+  border:1px solid rgba(110,168,0,.30) !important;
+  background: rgba(110,168,0,.12) !important;
+  color: #1f3b10 !important;
+  font-weight:700 !important;
+}
+
+/* Modal coherente */
+.modal-card{
+  border-radius:16px !important;
+  border:1px solid var(--line) !important;
+}
+.modal-head{
+  background:#fbfcfd !important;
+}
+
+/* ===== Banda superior verde (sin tocar HTML: se aplica a .topbar si existe, y fallback al primer header) ===== */
+.topbar, header{
+  background: var(--green) !important;
+  color:#fff !important;
+  border-bottom: 1px solid rgba(0,0,0,.06) !important;
+}
+.topbar a, header a{ color:#fff !important; }
+
+/* Si tu app no tiene header, convertimos el primer h1 en “banda” */
+main > h1{
+  margin: 0 0 16px 0 !important;
+  padding: 14px 16px !important;
+  background: var(--green) !important;
+  color:#fff !important;
+  border-radius:16px !important;
+  box-shadow: var(--shadow);
+}
+
+/* ===== Panel dorado tipo “Conectate con la naturaleza” (uso optativo) =====
+   Si tenés un bloque con clase .heroCard, queda con ese look sin cambiar funciones.
+*/
+.heroCard{
+  background: var(--gold) !important;
+  border-color: rgba(0,0,0,.08) !important;
+  color:#fff !important;
+}
+.heroCard .muted, .heroCard .small{ color: rgba(255,255,255,.9) !important; }
+.heroCard .primary{
+  background:#fff !important;
+  color: #2b2f33 !important;
+}
+.heroCard .primary:hover{ background:#f7f7f7 !important; }
+
+
+/* =========================
+   THEME PATCH · VIDRIO + FOTO (NO rompe layout)
+   Pegar siempre al FINAL del <style>
+   ========================= */
+:root{
+  --glassPanel: rgba(255,255,255,0.10);
+  --glassBorder: rgba(255,255,255,0.18);
+  --glassBlur: 18px;
+  --glassShadow: 0 10px 30px rgba(0,0,0,.12);
+
+  --fieldBg: rgba(252,248,230,0.16);      /* cremita traslúcido */
+  --fieldBorder: rgba(255,255,255,0.22);
+  --fieldBlur: 14px;
+}
+
+/* Fondo fotográfico nítido (siempre visible) */
+html, body{
+  background: transparent !important;
+}
+
+body::before{
+  content:"" !important;
+  position: fixed !important;
+  inset: 0 !important;
+  background-image: url("fondo.jpg") !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  filter: none !important;
+  opacity: 1 !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+}
+
+/* Banda superior (tu .top funciona como header) */
+.top{
+  background: var(--glassPanel) !important;
+  border: 1px solid var(--glassBorder) !important;
+  border-radius: 18px !important;
+  padding: 12px 12px !important;
+  box-shadow: var(--glassShadow) !important;
+  backdrop-filter: blur(var(--glassBlur));
+  -webkit-backdrop-filter: blur(var(--glassBlur));
+}
+
+/* Paneles principales */
+.card,
+.item,
+.login-card,
+.modal-card,
+.memory-panel,
+.coord-panel{
+  background: var(--glassPanel) !important;
+  border: 1px solid var(--glassBorder) !important;
+  box-shadow: var(--glassShadow) !important;
+  backdrop-filter: blur(var(--glassBlur));
+  -webkit-backdrop-filter: blur(var(--glassBlur));
+}
+
+/* Fondo de pantallas completas (login / modal overlay) */
+.login-screen{
+  background: rgba(0,0,0,0.25) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.modal{
+  background: rgba(0,0,0,0.40) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Encabezado de modal */
+.modal-head{
+  background: rgba(255,255,255,0.10) !important;
+  border-bottom: 1px solid var(--glassBorder) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Pills / tags suavizados */
+.pill,
+.tag,
+.badge-user{
+  background: rgba(255,255,255,0.12) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+  color: var(--txt) !important;
+}
+
+/* Inputs: cremita + traslúcido */
+input, select, textarea{
+  background: var(--fieldBg) !important;
+  border: 1px solid var(--fieldBorder) !important;
+  color: var(--txt) !important;
+  backdrop-filter: blur(var(--fieldBlur));
+  -webkit-backdrop-filter: blur(var(--fieldBlur));
+}
+
+/* Botones: vidrio suave */
+button, .btn, .login-btn{
+  background: rgba(255,255,255,0.14) !important;
+  border: 1px solid rgba(255,255,255,0.20) !important;
+  color: var(--txt) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+button:hover, .btn:hover, .login-btn:hover{
+  background: rgba(255,255,255,0.22) !important;
+}
+
+/* Mantener acciones "primary/ok/danger" legibles pero traslúcidas */
+button.primary, .primary{
+  background: rgba(110,168,0,0.18) !important;
+  border-color: rgba(255,255,255,0.22) !important;
+}
+button.ok, .ok{
+  background: rgba(15,122,42,0.14) !important;
+  border-color: rgba(255,255,255,0.22) !important;
+}
+button.danger, .danger{
+  background: rgba(185,28,28,0.12) !important;
+  border-color: rgba(255,255,255,0.22) !important;
+}
+
+/* Texto secundario y placeholders */
+.small, .sub, .login-sub, .login-note, label{
+  color: rgba(15,23,42,0.75) !important;
+}
+::placeholder{
+  color: rgba(15,23,42,0.55) !important;
+}
+html, body{ background: transparent !important; }
+
+body::before{
+  content:"" !important;
+  position: fixed !important;
+  inset: 0 !important;
+  background-image: url("fondo.jpg") !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  opacity: 1 !important;
+  filter: none !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+}
+
+
+
+/* =========================
+   PATCH CONTRASTE TEXTO (SOLO ESTÉTICA)
+   Objetivo: letras más oscuras sobre fondos claros/vidrio
+   ========================= */
+:root{
+  --txt:#0b1220 !important;
+  --mut:#243041 !important;
+}
+
+/* Texto global */
+html, body{
+  color: var(--txt) !important;
+}
+
+/* Textos secundarios (subtítulos, ayudas, labels) */
+.sub,
+.small,
+.login-sub,
+.login-note,
+label,
+.campo,
+.tag,
+.pill{
+  color: var(--mut) !important;
+}
+
+/* Asegurar títulos bien oscuros */
+h1,h2,h3,h4,
+.modal-title,
+.titulo{
+  color: var(--txt) !important;
+}
+
+/* Inputs: texto oscuro y placeholder legible */
+input,select,textarea{
+  color: var(--txt) !important;
+}
+::placeholder{
+  color: rgba(36,48,65,.70) !important;
+}
+
+/* Tags/pills con texto más oscuro (evita “letra clara sobre fondo claro”) */
+.tag,
+.pill,
+.badge-user{
+  color: var(--txt) !important;
+}
+
+/* Botones: texto más oscuro por defecto */
+button, .btn, .login-btn{
+  color: var(--txt) !important;
+}
+
+/* Botón primary: blanco real para contraste */
+button.primary, .primary{
+  color:#ffffff !important;
+}
+
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <h2 class="login-title">Acceso – PARTE DIARIO</h2>
+    <div class="login-sub">
+      Ingresá con tu usuario y clave asignados. Cada usuario está vinculado a una sección fija
+      (sector o área técnica).
+    </div>
+    <div class="login-field">
+      <label>Usuario</label>
+      <input id="loginUser" autocomplete="username" />
+    </div>
+    <div class="login-field">
+      <label>Clave</label>
+      <input id="loginPass" type="password" autocomplete="current-password" />
+    </div>
+    <button id="loginBtn" class="login-btn">Ingresar</button>
+    <div class="login-note">
+      Nota: las claves están definidas en el código de la app para uso interno del Bioparque.
+      No es un sistema de seguridad fuerte, sino una forma de ordenar quién carga cada sección.
+    </div>
+    <div class="login-note" style="margin-top:6px">
+      Usuarios de ejemplo:<br>
+      <b>Ejemplo:</b> usuario <b>coord</b> / clave <b>1234</b>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div>
+          <h1>Parte diario – Memoria Colectiva</h1>
+          <div class="sub">
+            Cada cuidador / área técnica carga su parte en su sección asignada.  
+            El parte general se arma por período y, según el usuario, muestra solo su sección o el conjunto completo (coordinación).
+          </div>
+        </div>
+      </div>
+      <div class="top-right">
+        <div class="pill">
+          Período: <b id="periodoLabel">sin definir</b>
+        </div>
+        <div class="pill">
+          Usuario: <b id="userLabel">—</b>
+        </div>
+        <button id="nuevoPeriodoBtn">Nuevo Parte</button>
+        <button id="logoutBtn" class="danger">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- FORMULARIO DE CARGA -->
+      <div class="card">
+        <h2>Cargar parte por sección</h2>
+        <div class="grid">
+          <div>
+            <label>Período (selección por calendario)</label>
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <label style="margin-top:0">Desde</label>
+                <input id="periodoDesde" type="date" />
+              </div>
+              <div>
+                <label style="margin-top:0">Hasta</label>
+                <input id="periodoHasta" type="date" />
+              </div>
+            </div>
+            <!-- Se mantiene este input oculto para no cambiar la lógica interna -->
+            <input id="periodoInput" type="text" style="display:none" />
+            <div class="small" style="margin-top:6px">
+              Se generará automáticamente un texto de período (ej: <b>2026-01-17/18 fin de semana</b>).
+            </div>
+          </div>
+          <div>
+            <label>Día del parte (calendario)</label>
+            <input id="diaFecha" type="date" />
+            <div class="small" style="margin-top:6px">
+              Al elegir la fecha, se completa automáticamente el día (Lunes...Domingo).
+            </div>
+            <select id="dia" style="display:none">
+              <option value="Lunes">Lunes</option>
+              <option value="Martes">Martes</option>
+              <option value="Miercoles">Miercoles</option>
+              <option value="Jueves">Jueves</option>
+              <option value="Viernes">Viernes</option>
+              <option value="Sabado">Sabado</option>
+              <option value="Domingo">Domingo</option>
+            </select>
+          </div>
+          <div>
+            <label>Sección asignada</label>
+            <select id="sector" disabled>
+              <option value="Sector 1">Sector 1</option>
+              <option value="Sector 2">Sector 2</option>
+              <option value="Sector 3">Sector 3</option>
+              <option value="Sector 4">Sector 4</option>
+              <option value="Nutrición">Nutrición</option>
+              <option value="Veterinaria">Veterinaria</option>
+              <option value="Biología">Biología</option>
+              <option value="Docencia e Investigación">Docencia e Investigación</option>
+            </select>
+          </div>
+          <div>
+            <label>Cuidador/a – Responsable</label>
+            <input id="cuidador" placeholder="Nombre" />
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div>
+          <label>Condiciones generales (clima, dotación, etc.)</label>
+          <textarea id="condiciones" placeholder="Ej: Caluroso, húmedo, dotación completa..."></textarea>
+        </div>
+
+        <div style="margin-top:8px">
+          <label>Novedades / incidencias</label>
+          <textarea id="novedades" class="textarea-large" placeholder="Ej: puerta mal cerrada, luz quemada, animal sin dieta..."></textarea>
+        </div>
+
+        <div style="margin-top:8px">
+          <label>Tareas pendientes / para próxima guardia</label>
+          <textarea id="pendientes" class="textarea-large" placeholder="Ej: cambiar lámpara, revisar reja, avisar a mantenimiento..."></textarea>
+        </div>
+
+        <div class="btns">
+          <button id="guardarBtn" class="primary">Guardar en parte general</button>
+          <button id="limpiarBtn">Limpiar formulario</button>
+        </div>
+      </div>
+
+      <!-- PARTE GENERAL + IA + MENSAJES + CALENDARIO + COORD -->
+      <div class="card">
+        <h2>Parte general del período</h2>
+        <div class="small">
+          Filtrá por período para ver lo cargado.  
+          Cuidador/a ve solo su sección; coordinación ve la foto completa.
+        </div>
+        <div class="hr"></div>
+
+        <div class="right-top-controls">
+          <div class="grid" style="margin-bottom:6px">
+            <div>
+              <label>Fecha seleccionada</label>
+              <select id="periodoSelect" class="filter"></select>
+            </div>
+            <div>
+              <label>Filtrar por día</label>
+              <select id="diaFiltro" class="filter">
+                <option value="">Todos</option>
+                <option value="Lunes">Lunes</option>
+                <option value="Martes">Martes</option>
+                <option value="Miercoles">Miercoles</option>
+                <option value="Jueves">Jueves</option>
+                <option value="Viernes">Viernes</option>
+                <option value="Sabado">Sabado</option>
+                <option value="Domingo">Domingo</option>
+              </select>
+            </div>
+          </div>
+          <div class="btns" style="margin-top:0">
+            <button id="exportBtn" class="ok">Exportar JSON</button>
+            <button id="importBtn">Importar JSON</button>
+            <button id="clearAllBtn" class="danger">Borrar todo (Solo coord)</button>
+            <input id="importFile" type="file" accept="application/json" style="display:none" />
+          </div>
+        </div>
+
+        <div id="lista" class="list"></div>
+
+        <div class="hr"></div>
+
+        <!-- MEMORY BASE IA (solo coord) -->
+        <div id="memorySection" class="btns">
+          <button id="memoryBtn" class="primary">Memory Base</button>
+        </div>
+        <div id="memoryPanel" class="memory-panel" style="display:none">
+          <label>Gestor Analisis LioApp</label>
+          <textarea id="memoryText"></textarea>
+          <div class="btns">
+            <button id="memoryCopyBtn" class="ok">Copiar DataLioApp</button>
+            <button id="memoryCloseBtn">Cerrar</button>
+          </div>
+          <div class="small">
+            Este prompt incluye el contexto del Bioparque, los registros del período seleccionado en JSON
+            y una consigna para que la IA haga análisis, informes y recomendaciones.
+          </div>
+        </div>
+
+        <!-- MENSAJERÍA INTERNA -->
+        <div class="hr"></div>
+        <h2 style="font-size:14px;margin:0 0 6px 0">Mensajería interna / recordatorios</h2>
+        <div class="small">
+          Cada sección ve sólo sus mensajes. Coordinación ve todas las secciones.
+        </div>
+        <div style="margin-top:8px">
+          <label>Nuevo mensaje</label>
+          <textarea id="msgTexto" placeholder="Ej: Recordar revisar la reja del recinto del tamanduá el próximo fin de semana..."></textarea>
+          <div class="btns">
+            <button id="msgPublicarBtn" class="primary">Publicar mensaje</button>
+          </div>
+        </div>
+        <div id="msgLista" class="list" style="margin-top:6px"></div>
+
+        <!-- CALENDARIO INTERNO -->
+        <div class="hr"></div>
+        <h2 style="font-size:14px;margin:0 0 6px 0">Calendario interno (general)</h2>
+        <div class="small">
+          Calendario compartido: tratamientos médicos, guardias especiales, vacaciones, capacitaciones y otros eventos.
+        </div>
+        <div class="grid" style="margin-top:8px">
+          <div>
+            <label>Fecha</label>
+            <input id="evtFecha" type="date" />
+          </div>
+          <div>
+            <label>Tipo de evento</label>
+            <select id="evtTipo">
+              <option value="Tratamiento médico">Tratamiento médico</option>
+              <option value="Guardia especial">Guardia especial</option>
+              <option value="Vacaciones">Vacaciones</option>
+              <option value="Capacitación">Capacitación</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:8px">
+          <label>Detalle</label>
+          <textarea id="evtDetalle" placeholder="Ej: Control veterinario a Puma yaguareté, 10 hs. Responsable: Veterinaria."></textarea>
+          <div class="btns">
+            <button id="evtGuardarBtn" class="ok">Guardar evento</button>
+          </div>
+        </div>
+        <div id="evtLista" class="list" style="margin-top:6px"></div>
+
+        <!-- PANEL JEFE / COORDINACIÓN -->
+        <div id="coordPanel" class="coord-panel" style="display:none">
+          <h3>Panel Jefatura / Coordinación – Informe semanal</h3>
+          <div class="small">
+            Genera un borrador de informe semanal combinando partes, mensajes internos y eventos de calendario.
+            Sólo visible para usuarios de coordinación.
+          </div>
+          <div class="grid" style="margin-top:8px">
+            <div>
+              <label>Desde (incluido)</label>
+              <input id="semDesde" type="date" />
+            </div>
+            <div>
+              <label>Hasta (incluido)</label>
+              <input id="semHasta" type="date" />
+            </div>
+          </div>
+          <div class="btns">
+            <button id="semGenerarBtn" class="primary">Generar borrador de informe</button>
+          </div>
+          <label style="margin-top:6px">Texto de informe (editable)</label>
+          <textarea id="semTexto"></textarea>
+          <div class="small" style="margin-top:4px">
+            Podés copiar este texto para un acta, un informe técnico o un mail a la dirección / coordinación general.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="small" style="margin-top:10px">
+      Los datos se guardan en este dispositivo (localStorage).  
+      Podés exportar un JSON como respaldo o para pasarlo a otra PC, e importarlo cuando lo necesites.  
+      Más adelante podemos pensar juntos un esquema de guardado en disco más formal Desarrollado por LioApp.
+    </div>
+  </div>
+</div>
+
+<script>
+/** CONFIGURACIÓN DE USUARIOS */
+const USERS = [
+  { username:"julia",  password:"1234", nombre:"Julia Petroselli",  seccion:"Sector 1" },
+  { username:"camila", password:"1234", nombre:"Camila Piergiacome",      seccion:"Sector 1" },
+  { username:"diego", password:"mono", nombre:"Diego Brutti",      seccion:"Sector 1" },
+  { username:"lea",    password:"lio", nombre:"Leandro Sector 2",     seccion:"Sector 2" },
+  { username:"meli",  password:"1234", nombre:"Administrcion",  seccion:"Adm" },
+  { username:"noe",  password:"1234", nombre:"Administracion",  seccion:"Adm" },
+  { username:"nutri", password:"1234", nombre:"Área Nutrición",       seccion:"Nutrición" },
+  { username:"vet",   password:"1234", nombre:"Área Veterinaria",     seccion:"Veterinaria" },
+  { username:"bio",   password:"1234", nombre:"Biología",             seccion:"Biología" },
+  { username:"doc",   password:"1234", nombre:"Docencia e Investigación", seccion:"Docencia e Investigación" },
+  { username:"coord", password:"1234", nombre:"Jefatura / Coordinación",  seccion:"Coordinación", rol:"coord" }
+];
+
+const LS_KEY = "bioparque_partes_v1";
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    if (!parsed) return { entries: [], messages: [], events: [] };
+    if (Array.isArray(parsed)) {
+      return { entries: parsed, messages: [], events: [] };
+    }
+    return {
+      entries: Array.isArray(parsed.entries) ? parsed.entries : [],
+      messages: Array.isArray(parsed.messages) ? parsed.messages : [],
+      events: Array.isArray(parsed.events) ? parsed.events : []
+    };
+  }catch(e){
+    return { entries: [], messages: [], events: [] };
+  }
+}
+function saveState(state){
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+function uid(){
+  return "id_" + Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
+
+let state = loadState();
+let currentUser = null;
+
+    try{ applyPeriodoLock(); }catch(e){}
+function isCoord(){
+  return !!(currentUser && currentUser.rol === "coord");
+}
+
+// Bloquea edición de fecha/período (solo coordinación)
+function applyPeriodoLock(){
+  const locked = !isCoord();
+
+  // Selector principal
+  const ps = document.getElementById("periodoSelect");
+  if (ps){
+    ps.disabled = locked;
+    ps.title = locked ? "Solo coordinación puede cambiar la fecha/período" : "";
+  }
+
+  // Inputs/calendarios opcionales
+  ["periodoFecha","periodoDesde","periodoHasta"].forEach((id)=>{
+    const el = document.getElementById(id);
+    if (el){
+      el.disabled = locked;
+      el.title = locked ? "Solo coordinación puede cambiar la fecha/período" : "";
+    }
+  });
+
+  // Botón "nuevo período/fecha" (si existe)
+  const btn = document.getElementById("nuevoPeriodoBtn") || document.getElementById("nuevoPeriodo");
+  if (btn) btn.style.display = locked ? "none" : "";
+}
+
+// Hook: alerta solo si intentan cambiar (por si algún control quedara habilitado)
+function hookGuardOnChange(id){
+  const el = document.getElementById(id);
+  if (!el) return;
+  let prev = el.value;
+  el.addEventListener("focus", ()=>{ prev = el.value; });
+  el.addEventListener("change", ()=>{
+    if (isCoord()){ prev = el.value; return; }
+    el.value = prev;
+    alert("Solo coordinación puede cambiar la fecha/período del parte.");
+  });
+}
+["periodoSelect","periodoFecha","periodoDesde","periodoHasta"].forEach(hookGuardOnChange);
+
+let editingEntryId = null;
+let editingMsgId = null;
+
+// LOGIN
+const loginScreen = document.getElementById("loginScreen");
+const app = document.getElementById("app");
+const loginUser = document.getElementById("loginUser");
+const loginPass = document.getElementById("loginPass");
+const loginBtn = document.getElementById("loginBtn");
+const userLabel = document.getElementById("userLabel");
+const coordPanel = document.getElementById("coordPanel");
+
+// elementos app
+const periodoInput = document.getElementById("periodoInput");
+const periodoFecha = document.getElementById("periodoFecha");
+const periodoDesde = document.getElementById("periodoDesde");
+const periodoHasta = document.getElementById("periodoHasta");
+const periodoLabel = document.getElementById("periodoLabel");
+const nuevoPeriodoBtn = document.getElementById("nuevoPeriodoBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const dia = document.getElementById("dia");
+const diaFecha = document.getElementById("diaFecha");
+const sector = document.getElementById("sector");
+const cuidador = document.getElementById("cuidador");
+const condiciones = document.getElementById("condiciones");
+const novedades = document.getElementById("novedades");
+const pendientes = document.getElementById("pendientes");
+const guardarBtn = document.getElementById("guardarBtn");
+const limpiarBtn = document.getElementById("limpiarBtn");
+
+const periodoSelect = document.getElementById("periodoSelect");
+const diaFiltro = document.getElementById("diaFiltro");
+const lista = document.getElementById("lista");
+
+const entryModal = document.getElementById("entryModal");
+const modalTitle = document.getElementById("modalTitle");
+const modalSub = document.getElementById("modalSub");
+const modalBody = document.getElementById("modalBody");
+const modalCloseBtn = document.getElementById("modalCloseBtn");
+
+function openEntryModal(entry){
+  const entryModalEl = document.getElementById("entryModal");
+  const modalTitleEl = document.getElementById("modalTitle");
+  const modalSubEl = document.getElementById("modalSub");
+  const modalBodyEl = document.getElementById("modalBody");
+  if (!entryModalEl || !modalTitleEl || !modalSubEl || !modalBodyEl){
+    alert("No se pudo abrir la vista completa (modal no encontrado).");
+    return;
+  }
+  modalTitleEl.textContent = `Parte — ${entry.sector || ""}`;
+  modalSubEl.textContent = `${entry.periodo || ""} · ${entry.dia || ""} · ${entry.cuidador || ""}`.trim();
+  modalBodyEl.innerHTML = `
+    <h4>Condiciones</h4>
+    <div class="block">${escapeHtml(entry.condiciones || "")}</div>
+    <h4>Novedades / incidencias</h4>
+    <div class="block">${escapeHtml(entry.novedades || "")}</div>
+    <h4>Tareas pendientes / próxima guardia</h4>
+    <div class="block">${escapeHtml(entry.pendientes || "")}</div>
+  `;
+  entryModalEl.classList.add("show");
+  entryModalEl.setAttribute("aria-hidden","false");
+}
+function closeEntryModal(){
+  const entryModalEl = document.getElementById("entryModal");
+  if (!entryModalEl) return;
+  entryModalEl.classList.remove("show");
+  entryModalEl.setAttribute("aria-hidden","true");
+}
+if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeEntryModal);
+if (entryModal) entryModal.addEventListener("click", (e)=>{ if (e.target === entryModal) closeEntryModal(); });
+document.addEventListener("keydown", (e)=>{ if (e.key === "Escape") closeEntryModal(); });
+
+
+const exportBtn = document.getElementById("exportBtn");
+const importBtn = document.getElementById("importBtn");
+const clearAllBtn = document.getElementById("clearAllBtn");
+const importFile = document.getElementById("importFile");
+
+const memorySection = document.getElementById("memorySection");
+const memoryBtn = document.getElementById("memoryBtn");
+const memoryPanel = document.getElementById("memoryPanel");
+const memoryText = document.getElementById("memoryText");
+const memoryCopyBtn = document.getElementById("memoryCopyBtn");
+const memoryCloseBtn = document.getElementById("memoryCloseBtn");
+
+// Mensajería
+const msgTexto = document.getElementById("msgTexto");
+const msgPublicarBtn = document.getElementById("msgPublicarBtn");
+const msgLista = document.getElementById("msgLista");
+
+// Calendario
+const evtFecha = document.getElementById("evtFecha");
+const evtTipo = document.getElementById("evtTipo");
+const evtDetalle = document.getElementById("evtDetalle");
+const evtGuardarBtn = document.getElementById("evtGuardarBtn");
+const evtLista = document.getElementById("evtLista");
+
+// Coord / informe semanal
+const semDesde = document.getElementById("semDesde");
+const semHasta = document.getElementById("semHasta");
+const semGenerarBtn = document.getElementById("semGenerarBtn");
+const semTexto = document.getElementById("semTexto");
+
+function setCoordPanelVisible(isVisible){
+  coordPanel.style.display = isVisible ? "block" : "none";
+  if (memorySection) memorySection.style.display = isVisible ? "flex" : "none";
+  if (!isVisible && memoryPanel) memoryPanel.style.display = "none";
+  if (clearAllBtn) clearAllBtn.style.display = isVisible ? "inline-block" : "none";
+}
+
+function doLogin(){
+  const u = (loginUser.value || "").trim();
+  const p = (loginPass.value || "").trim();
+  const found = USERS.find(x => x.username === u && x.password === p);
+  if (!found){
+    alert("Usuario o clave incorrectos.");
+    return;
+  }
+  currentUser = found;
+  try{ applyPeriodoLock(); }catch(e){}
+  loginScreen.style.display = "none";
+  app.style.display = "block";
+  userLabel.textContent = `${found.nombre} (${found.seccion})`;
+  const sectorSelect = document.getElementById("sector");
+
+  if (found.rol === "coord"){
+    sectorSelect.disabled = false;
+  }else{
+    sectorSelect.value = found.seccion;
+    sectorSelect.disabled = true;
+  }
+
+  setCoordPanelVisible(found.rol === "coord");
+  // defaults período por calendario
+  if (periodoDesde && !periodoDesde.value){
+    const iso = new Date().toISOString().slice(0,10);
+    periodoDesde.value = iso;
+  }
+  if (periodoHasta && !periodoHasta.value){
+    const base = (periodoDesde && periodoDesde.value) ? new Date(periodoDesde.value) : new Date();
+    const d2 = new Date(base.getTime() + 24*60*60*1000);
+    periodoHasta.value = d2.toISOString().slice(0,10);
+  }
+  try{ syncPeriodoFromInputs(); }catch(e){}
+
+  try{ applyPeriodoLock(); }catch(e){}
+  if (found.rol === "coord"){
+    initSemanaPorDefecto();
+  }
+
+  // actualizar vistas según quien entra
+  renderMessages();
+  renderLista();
+}
+
+function doLogout(){
+  if (!confirm("¿Cerrar sesión y volver a la pantalla de acceso?")) return;
+
+  currentUser = null;
+  userLabel.textContent = "—";
+  editingEntryId = null;
+  editingMsgId = null;
+  guardarBtn.textContent = "Guardar en parte general";
+  msgPublicarBtn.textContent = "Publicar mensaje";
+
+  app.style.display = "none";
+  loginScreen.style.display = "flex";
+
+  loginUser.value = "";
+  loginPass.value = "";
+  if (cuidador) cuidador.value = "";
+
+  setCoordPanelVisible(false);
+  renderMessages();
+  renderLista();
+}
+
+loginBtn.addEventListener("click", doLogin);
+loginPass.addEventListener("keydown", e => { if(e.key==="Enter") doLogin(); });
+
+// resto de funciones
+function distinctPeriodos(){
+  const set = new Set(state.entries.map(e => e.periodo).filter(Boolean));
+  return Array.from(set);
+}
+
+function renderPeriodos(){
+  const periodos = distinctPeriodos();
+  periodoSelect.innerHTML = "";
+  if (!periodos.length){
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Sin datos";
+    periodoSelect.appendChild(opt);
+    periodoLabel.textContent = "sin definir";
+    return;
+  }
+  for (const p of periodos){
+    const opt = document.createElement("option");
+    opt.value = p;
+    opt.textContent = p;
+    periodoSelect.appendChild(opt);
+  }
+  periodoSelect.value = periodos[periodos.length-1];
+  periodoLabel.textContent = periodoSelect.value;
+}
+
+// PARTE GENERAL – filtrado por sección
+function renderLista(){
+  lista.innerHTML = "";
+
+  if (!currentUser){
+    lista.innerHTML = `<div class="small">Iniciá sesión para ver el parte general.</div>`;
+    return;
+  }
+
+  const pSel = periodoSelect.value;
+  if (!pSel){
+    lista.innerHTML = `<div class="small">Todavía no hay partes cargados para ninguna fecha.</div>`;
+    return;
+  }
+
+  const diaSel = diaFiltro.value;
+
+  let items = state.entries
+    .filter(e => e.periodo === pSel)
+    .filter(e => !diaSel || e.dia === diaSel);
+
+  // Filtrado por sección según usuario:
+  if (currentUser.rol !== "coord"){
+    items = items.filter(e => e.sector === currentUser.seccion);
+  }
+
+  if (!items.length){
+    const msg = currentUser.rol === "coord"
+      ? "No hay registros para ese filtro."
+      : "No hay registros para ese filtro en tu sección.";
+    lista.innerHTML = `<div class="small">${msg}</div>`;
+    return;
+  }
+
+  items.sort((a,b)=>{
+    const ordenDia = d => (d==="Sabado" || d==="Sábado") ? 1 : (d==="Domingo") ? 2 : 3;
+    const dA = ordenDia(a.dia), dB = ordenDia(b.dia);
+    if (dA !== dB) return dA - dB;
+    return (a.sector || "").localeCompare(b.sector || "");
+  });
+
+  for (const e of items){
+    const div = document.createElement("div");
+    div.className = "item clickable";
+    div.innerHTML = `
+      <div class="item-head">
+        <div class="tags">
+          <span class="tag ${e.dia === "sábado" ? "sat" : e.dia === "domingo" ? "sun" : ""}">${e.dia}</span>
+          <span class="tag sector">${e.sector}</span>
+          ${e.cuidador ? `<span class="tag cuid">${escapeHtml(e.cuidador)}</span>` : ""}
+        </div>
+        <div class="small">${new Date(e.createdAt).toLocaleString("es-AR",{dateStyle:"short",timeStyle:"short"})}</div>
+      </div>
+      <p class="titulo">${e.periodo}</p>
+      ${e.condiciones ? `<div class="campo"><b>Condiciones:</b> ${escapeHtml(e.condiciones)}</div>` : ""}
+      ${e.novedades ? `<div class="campo"><b>Novedades / incidencias:</b> ${escapeHtml(e.novedades)}</div>` : ""}
+      ${e.pendientes ? `<div class="campo"><b>Pendientes / próxima guardia:</b> ${escapeHtml(e.pendientes)}</div>` : ""}
+      <div class="btns" style="margin-top:6px">
+        <button class="ok" onclick="startEditEntry('${e.id}')">Editar</button>
+      </div>
+    `;
+
+    // Lectura rápida
+    const btnView = document.createElement("button");
+    btnView.type = "button";
+    btnView.className = "primary";
+    btnView.textContent = "Ver completo";
+    btnView.style.marginLeft = "8px";
+    btnView.addEventListener("click", (ev)=>{ ev.stopPropagation(); openEntryModal(e); });
+
+    // Insertar el botón al lado de "Editar"
+    const btns = div.querySelector(".btns");
+    if (btns) btns.appendChild(btnView);
+
+    // Click en toda la tarjeta
+    div.addEventListener("click", () => openEntryModal(e));
+    lista.appendChild(div);
+  }
+}
+
+function escapeHtml(s){
+  return String(s || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+
+function syncFechaToPeriodo(){
+if (!periodoFecha || !periodoInput) return;
+  const iso = (periodoFecha.value || "").trim();
+  if (!iso) return;
+  periodoInput.value = iso;
+  if (periodoLabel) periodoLabel.textContent = iso;
+}
+
+
+function setFechaParteEditable(isCoord){
+  // Fecha del parte (selector general) solo editable por coordinación
+  if (periodoFecha){
+    periodoFecha.disabled = !isCoord;
+    periodoFecha.title = isCoord ? "Editar fecha del parte" : "Solo coordinación puede cambiar la fecha del parte";
+  }
+
+
+function setPeriodoEditable(isCoord){
+  // Selector de fecha/período (parte general) SOLO coordinación
+  if (periodoSelect){
+    periodoSelect.disabled = !isCoord;
+    periodoSelect.title = isCoord ? "Cambiar fecha del parte" : "Solo coordinación puede cambiar la fecha del parte";
+  }
+  if (nuevoPeriodoBtn){
+    nuevoPeriodoBtn.style.display = isCoord ? "" : "none";
+  }
+}
+
+  // botón Nuevo parte (si existe)
+  const btnNueva = document.getElementById("nuevoPeriodoBtn") || document.getElementById("nuevoPeriodo");
+  if (btnNueva){
+    btnNueva.style.display = isCoord ? "" : "none";
+  }
+}
+
+
+function getDiaEsFromISO(iso){
+  if (!iso) return "";
+  const d = new Date(iso + "T00:00:00");
+  if (isNaN(d)) return "";
+  const names = ["Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sabado"];
+  return names[d.getDay()] || "";
+}
+function syncDiaFromFecha(){
+  if (!diaFecha || !dia) return;
+  const iso = (diaFecha.value || "").trim();
+  const diaTxt = getDiaEsFromISO(iso) || "Sabado";
+  dia.value = diaTxt;
+}
+
+function buildPeriodoFromDates(desdeISO, hastaISO){
+  if (!desdeISO) return "";
+  // Si no hay 'hasta', asumimos 2 días (fin de semana) sumando 1 día
+  if (!hastaISO){
+    const d = new Date(desdeISO);
+    if (!isNaN(d)){
+      const d2 = new Date(d.getTime() + 24*60*60*1000);
+      hastaISO = d2.toISOString().slice(0,10);
+    }
+  }
+  if (!hastaISO) return desdeISO;
+
+  const hastaDD = (hastaISO.split("-")[2] || "");
+  return `${desdeISO}/${hastaDD} fin de semana`;
+}
+
+function syncPeriodoFromInputs(){
+if (!periodoDesde) return;
+  const desde = (periodoDesde.value || "").trim();
+  const hasta = (periodoHasta && periodoHasta.value) ? periodoHasta.value.trim() : "";
+  const periodoTxt = buildPeriodoFromDates(desde, hasta);
+  if (periodoInput) periodoInput.value = periodoTxt;
+  if (periodoLabel) periodoLabel.textContent = periodoTxt || "sin definir";
+}
+
+function guardarEntrada(){
+  try{ syncFechaToPeriodo(); }catch(e){}
+
+  // sincroniza período desde calendario
+  try{ syncPeriodoFromInputs(); }catch(e){}
+  if (!currentUser){
+    alert("Primero iniciá sesión.");
+    return;
+  }
+
+  const periodo = (periodoInput.value || "").trim();
+  const d = dia.value;
+  const s = sector.value;
+  const c = (cuidador.value || "").trim();
+
+  if (!periodo){
+    alert("Definí un período (por ejemplo: 2025-12-27/28 fin de semana).");
+    periodoInput.focus();
+    return;
+  }
+  if (!c){
+    if (!confirm("No escribiste el nombre del cuidador/responsable. ¿Guardar igual?")) return;
+  }
+
+  const base = {
+    periodo,
+    dia: d,
+    sector: s,
+    cuidador: c,
+    condiciones: (condiciones.value || "").trim(),
+    novedades: (novedades.value || "").trim(),
+    pendientes: (pendientes.value || "").trim(),
+    usuario: currentUser.username
+  };
+
+  if (editingEntryId){
+    const idx = state.entries.findIndex(e => e.id === editingEntryId);
+    if (idx >= 0){
+      state.entries[idx] = {
+        ...state.entries[idx],
+        ...base,
+        updatedAt: new Date().toISOString()
+      };
+    }else{
+      state.entries.push({
+        id: uid(),
+        ...base,
+        createdAt: new Date().toISOString()
+      });
+    }
+  }else{
+    const entry = {
+      id: uid(),
+      ...base,
+      createdAt: new Date().toISOString()
+    };
+    state.entries.push(entry);
+  }
+
+  saveState(state);
+
+  editingEntryId = null;
+  guardarBtn.textContent = "Guardar en parte general";
+
+  renderPeriodos();
+  renderLista();
+  periodoSelect.value = periodo;
+  periodoLabel.textContent = periodo;
+
+  condiciones.value = "";
+  novedades.value = "";
+  pendientes.value = "";
+  cuidador.value = "";
+  cuidador.focus();
+}
+
+function limpiarFormulario(){
+  editingEntryId = null;
+  guardarBtn.textContent = "Guardar en parte general";
+  cuidador.value = "";
+  condiciones.value = "";
+  novedades.value = "";
+  pendientes.value = "";
+  cuidador.focus();
+}
+
+function startEditEntry(id){
+  if (!currentUser){
+    alert("Primero iniciá sesión.");
+    return;
+  }
+  const entry = state.entries.find(e => e.id === id);
+  if (!entry){
+    alert("No se encontró el registro a editar.");
+    return;
+  }
+  editingEntryId = id;
+  periodoInput.value = entry.periodo || "";
+  periodoLabel.textContent = entry.periodo || "sin definir";
+  dia.value = entry.dia || "sábado";
+  try{
+    sector.value = entry.sector || currentUser.seccion;
+  }catch(e){}
+  cuidador.value = entry.cuidador || "";
+  condiciones.value = entry.condiciones || "";
+  novedades.value = entry.novedades || "";
+  pendientes.value = entry.pendientes || "";
+  guardarBtn.textContent = "Actualizar parte";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function nuevoPeriodo(){
+  if (!currentUser || currentUser.rol !== "coord"){ alert("Solo coordinación puede crear/cambiar la fecha del parte."); return; }
+
+  if (!periodoFecha){
+    const txt = prompt("Nueva fecha del parte (YYYY-MM-DD):", periodoInput.value || "");
+    if (!txt) return;
+    periodoInput.value = txt;
+    periodoLabel.textContent = txt;
+    return;
+  }
+  const iso = prompt("Nueva fecha del parte (YYYY-MM-DD):", (periodoFecha.value || new Date().toISOString().slice(0,10)));
+  if (!iso) return;
+  periodoFecha.value = iso;
+  syncFechaToPeriodo();
+  // al crear una fecha nueva, la seleccionamos en el filtro general
+  try{ refreshPeriodoSelect(); }catch(e){}
+}
+
+// EXPORTAR JSON
+function exportJson(){
+  if (!state.entries.length && !state.messages.length && !state.events.length){
+    alert("No hay datos para exportar.");
+    return;
+  }
+  const data = JSON.stringify(state, null, 2);
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,"0");
+  const d = String(now.getDate()).padStart(2,"0");
+  const periodo = (periodoSelect.value || "sin_periodo")
+    .replace(/\s+/g,"_")
+    .replace(/[^\w\-]/g,"");
+  const fileName = `partes-bioparque-${periodo}-${y}${m}${d}.json`;
+
+  const blob = new Blob([data], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// IMPORTAR JSON
+function handleImportFile(evt){
+  const file = evt.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const imported = JSON.parse(e.target.result);
+      let newState = { entries: [], messages: [], events: [] };
+
+      if (Array.isArray(imported.entries)) {
+        newState.entries = imported.entries;
+      } else if (Array.isArray(imported)) {
+        newState.entries = imported;
+      }
+
+      if (Array.isArray(imported.messages)) {
+        newState.messages = imported.messages;
+      }
+      if (Array.isArray(imported.events)) {
+        newState.events = imported.events;
+      }
+
+      if (!confirm("Esto reemplazará TODOS los datos actuales por los del archivo seleccionado. ¿Continuar?")){
+        return;
+      }
+      state = newState;
+      saveState(state);
+      renderPeriodos();
+      renderLista();
+      renderMessages();
+      renderEvents();
+      alert("Datos importados correctamente.");
+    }catch(err){
+      console.error(err);
+      alert("No se pudo leer el archivo JSON. Verificá que sea un backup válido.");
+    }finally{
+      importFile.value = "";
+    }
+  };
+  reader.readAsText(file);
+}
+
+// BORRAR TODO (solo coord)
+function clearAllData(){
+  if (!currentUser || currentUser.rol !== "coord"){
+    alert("Solo coordinación puede borrar todos los datos.");
+    return;
+  }
+  if (!confirm("Esto borrará TODOS los partes, mensajes y eventos guardados en esta PC. Asegurate de haber exportado un JSON antes. ¿Continuar?")){
+    return;
+  }
+  state = { entries: [], messages: [], events: [] };
+  saveState(state);
+  renderPeriodos();
+  renderLista();
+  renderMessages();
+  renderEvents();
+  periodoLabel.textContent = "sin definir";
+  alert("Datos borrados. La planilla quedó limpia.");
+}
+
+// MEMORY BASE – prompt completo (entries + mensajes + eventos)
+function buildMemoryPrompt(){
+  const pSel = periodoSelect.value || "";
+  const entries = state.entries.filter(e => !pSel || e.periodo === pSel);
+  const messages = state.messages;
+  const events = state.events;
+
+  const payload = {
+    periodoSeleccionado: pSel || null,
+    entries,
+    messages,
+    events
+  };
+
+  const json = JSON.stringify(payload, null, 2);
+
+  return `
+Eres un asistente especializado en gestión de Bioparques, bienestar animal y trabajo en equipo.
+
+Contexto institucional:
+- Institución: Bioparque Municipal de La Plata.
+- Este material surge de una herramienta interna utilizada por cuidadores/as, áreas técnicas y coordinación.
+- Los datos reflejan guardias de fin de semana/feriados, mensajería interna y un calendario simple de eventos.
+
+Estructura del JSON adjunto:
+- "periodoSeleccionado": texto que identifica el período de trabajo (ej: "2025-12-27/28 fin de semana").
+- "entries": lista de partes de guardia. Cada entrada suele tener:
+  - "periodo": nombre del período.
+  - "dia": sábado / domingo / feriado.
+  - "sector": sector o área (Sector 1, Sector 2, Nutrición, Veterinaria, Biología, Docencia e Investigación, etc.).
+  - "cuidador": nombre de la persona responsable.
+  - "condiciones": condiciones generales (clima, dotación, etc.).
+  - "novedades": novedades e incidencias de la guardia.
+  - "pendientes": tareas pendientes o para próximas guardias.
+  - "createdAt": fecha y hora en que se registró el parte.
+- "messages": lista de mensajes internos y recordatorios. Cada mensaje suele incluir:
+  - "texto": contenido del mensaje.
+  - "authorName": nombre de quien lo escribe.
+  - "seccion": sector / área desde donde se escribe.
+  - "createdAt": fecha y hora del mensaje.
+- "events": lista de eventos del calendario interno. Cada evento suele incluir:
+  - "fecha": día del evento.
+  - "tipo": tipo de evento (tratamiento médico, guardia especial, vacaciones, capacitación, otro).
+  - "detalle": descripción del evento.
+  - "seccion": sector / área asociada.
+  - "autor": quién lo cargó.
+  - "createdAt": fecha de registro.
+
+Tu tarea es hacer un ANÁLISIS COMPLETO y ÚTIL para la coordinación del Bioparque.
+
+1) RESUMEN GENERAL (máximo 10–12 líneas)
+   - ¿Cómo fue el período "${pSel || "sin_período"}" en términos generales?
+   - Señalá clima, dotación, dinámica de trabajo, y cualquier hecho que marque el período.
+
+2) ANÁLISIS POR SECCIÓN / ÁREA
+   - Para cada sector o área con información (Sector 1, 2, 3, 4, Nutrición, Veterinaria, Biología, Docencia e Investigación, etc.):
+     - Resumí las novedades más relevantes.
+     - Señalá problemas recurrentes o temas que se repiten (por ejemplo: puertas mal cerradas, fallas de iluminación, temas de alimentación, manejo de recintos, etc.).
+     - Mencioná las tareas pendientes que aparezcan reiteradas.
+
+3) PATRONES CRÍTICOS Y RIESGOS
+   - Identificá explícitamente "Patrones críticos" (situaciones que se repiten en varios días o secciones).
+   - Señalá riesgos para:
+     - Bienestar animal.
+     - Seguridad de las personas.
+     - Integridad de instalaciones y equipamiento.
+   - Si hay incoherencias o datos faltantes, mencioná cómo impactan en la lectura de la situación.
+
+4) RECOMENDACIONES OPERATIVAS (CORTO PLAZO)
+   - Proponé acciones concretas para las próximas guardias:
+     - Checklists sugeridas (ej: apertura/cierre de recintos, revisión de agua/dieta, verificación de puertas y candados, etc.).
+     - Recordatorios clave para cuidadores/as y áreas técnicas.
+     - Sugerencias de coordinación entre sectores (ej: Nutrición ↔ Cuidadores, Veterinaria ↔ Cuidadores, Biología ↔ Docencia e Investigación).
+
+5) PROPUESTAS ESTRUCTURALES Y DE PROTOCOLO (MEDIANO PLAZO)
+   - En base a las incidencias y pendientes, sugerí:
+     - Mejoras de infraestructura (rejas, luminarias, recintos, cartelería, etc.).
+     - Ajustes en protocolos (por ejemplo, pasos de cierre, comunicación de incidencias, registro de dietas).
+     - Ideas de capacitación interna (temas que convendría trabajar con el equipo).
+
+6) USO DEL CALENDARIO Y MENSAJERÍA
+   - A partir de "messages" y "events", indicá:
+     - Si se están usando de forma coherente o si ves desorden/desprolijidad.
+     - Qué tipo de eventos o mensajes convendría formalizar mejor (ej: pasar a actas, documentos formales, etc.).
+     - Sugerencias para aprovechar mejor el calendario interno.
+
+7) SALIDA FINAL EN FORMATO DE INFORME
+   - Organizá la respuesta en secciones con títulos claros:
+     - "Resumen general del período"
+     - "Análisis por secciones"
+     - "Patrones críticos y riesgos"
+     - "Recomendaciones operativas (corto plazo)"
+     - "Propuestas estructurales y de protocolo (mediano plazo)"
+     - "Observaciones sobre mensajería y calendario"
+   - Al final, agregá un apartado:
+     - "Borrador para acta o informe a dirección",
+       donde redactes en 10–15 líneas un texto listo para copiar/pegar en un acta o informe formal, en tono profesional pero claro.
+
+A continuación tenés el JSON con la información del período y el contexto interno del Bioparque:
+
+${json}
+`.trim();
+}
+
+// MENSAJERÍA (filtrada por sección, editable)
+function renderMessages(){
+  msgLista.innerHTML = "";
+
+  if (!currentUser){
+    msgLista.innerHTML = `<div class="small">Iniciá sesión para ver los mensajes internos.</div>`;
+    return;
+  }
+
+  let visibles;
+  if (currentUser.rol === "coord"){
+    visibles = state.messages;
+  } else {
+    visibles = state.messages.filter(m => m.seccion === currentUser.seccion);
+  }
+
+  if (!visibles || !visibles.length){
+    msgLista.innerHTML = `<div class="small">Todavía no hay mensajes para tu sección.</div>`;
+    return;
+  }
+
+  const sorted = [...visibles].sort(
+    (a,b)=> new Date(b.createdAt) - new Date(a.createdAt)
+  );
+  for (const m of sorted.slice(0,30)){
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <div class="item-head">
+        <div class="tags">
+          <span class="tag sector">${escapeHtml(m.seccion || "General")}</span>
+          ${m.authorName ? `<span class="tag cuid">${escapeHtml(m.authorName)}</span>` : ""}
+        </div>
+        <div class="small">${new Date(m.createdAt).toLocaleString("es-AR",{dateStyle:"short",timeStyle:"short"})}</div>
+      </div>
+      <div class="campo"><b>Mensaje:</b> ${escapeHtml(m.texto || "")}</div>
+      <div class="btns" style="margin-top:6px">
+        <button class="ok" onclick="startEditMessage('${m.id}')">Editar</button>
+      </div>
+    `;
+    msgLista.appendChild(div);
+  }
+}
+
+function guardarMensaje(){
+  if (!currentUser){
+    alert("Primero iniciá sesión.");
+    return;
+  }
+  const texto = (msgTexto.value || "").trim();
+  if (!texto){
+    alert("Escribí un mensaje antes de publicar.");
+    msgTexto.focus();
+    return;
+  }
+  const autor = (cuidador.value || currentUser.nombre);
+
+  if (editingMsgId){
+    const idx = state.messages.findIndex(m => m.id === editingMsgId);
+    if (idx >= 0){
+      state.messages[idx] = {
+        ...state.messages[idx],
+        texto,
+        authorName: autor,
+        usuario: currentUser.username,
+        seccion: currentUser.seccion,
+        updatedAt: new Date().toISOString()
+      };
+    }else{
+      state.messages.push({
+        id: uid(),
+        texto,
+        authorName: autor,
+        usuario: currentUser.username,
+        seccion: currentUser.seccion,
+        createdAt: new Date().toISOString()
+      });
+    }
+  }else{
+    const msg = {
+      id: uid(),
+      texto,
+      authorName: autor,
+      usuario: currentUser.username,
+      seccion: currentUser.seccion,
+      createdAt: new Date().toISOString()
+    };
+    state.messages.push(msg);
+  }
+
+  saveState(state);
+  msgTexto.value = "";
+  editingMsgId = null;
+  msgPublicarBtn.textContent = "Publicar mensaje";
+  renderMessages();
+}
+
+function startEditMessage(id){
+  if (!currentUser){
+    alert("Primero iniciá sesión.");
+    return;
+  }
+  const m = state.messages.find(msg => msg.id === id);
+  if (!m){
+    alert("No se encontró el mensaje a editar.");
+    return;
+  }
+  editingMsgId = id;
+  msgTexto.value = m.texto || "";
+  msgPublicarBtn.textContent = "Actualizar mensaje";
+  msgTexto.scrollIntoView({ behavior:"smooth", block:"center" });
+}
+
+// CALENDARIO (general)
+function renderEvents(){
+  evtLista.innerHTML = "";
+  if (!state.events.length){
+    evtLista.innerHTML = `<div class="small">Todavía no hay eventos agendados.</div>`;
+    return;
+  }
+  const sorted = [...state.events].sort((a,b)=>{
+    const da = a.fecha || "";
+    const db = b.fecha || "";
+    if (da === db) return new Date(a.createdAt) - new Date(b.createdAt);
+    return da.localeCompare(db);
+  });
+  for (const ev of sorted){
+    const div = document.createElement("div");
+    div.className = "item";
+    const fechaText = ev.fecha ? new Date(ev.fecha).toLocaleDateString("es-AR") : "Sin fecha";
+    div.innerHTML = `
+      <div class="item-head">
+        <div class="tags">
+          <span class="tag sector">${escapeHtml(ev.tipo || "Evento")}</span>
+          ${ev.seccion ? `<span class="tag">${escapeHtml(ev.seccion)}</span>` : ""}
+          ${ev.autor ? `<span class="tag cuid">${escapeHtml(ev.autor)}</span>` : ""}
+        </div>
+        <div class="small">${fechaText}</div>
+      </div>
+      <div class="campo"><b>Detalle:</b> ${escapeHtml(ev.detalle || "")}</div>
+    `;
+    evtLista.appendChild(div);
+  }
+}
+
+function guardarEvento(){
+  if (!currentUser){
+    alert("Primero iniciá sesión.");
+    return;
+  }
+  const fecha = (evtFecha.value || "").trim();
+  const detalle = (evtDetalle.value || "").trim();
+  const tipo = evtTipo.value;
+
+  if (!fecha){
+    alert("Seleccioná una fecha para el evento.");
+    evtFecha.focus();
+    return;
+  }
+  if (!detalle){
+    alert("Escribí un detalle para el evento.");
+    evtDetalle.focus();
+    return;
+  }
+
+  const ev = {
+    id: uid(),
+    fecha,
+    tipo,
+    detalle,
+    seccion: currentUser.seccion,
+    usuario: currentUser.username,
+    autor: (cuidador.value || currentUser.nombre),
+    createdAt: new Date().toISOString()
+  };
+  state.events.push(ev);
+  saveState(state);
+  evtDetalle.value = "";
+  renderEvents();
+}
+
+// INFORME SEMANAL – COORDINACIÓN
+function initSemanaPorDefecto(){
+  const hoy = new Date();
+  const hasta = hoy.toISOString().slice(0,10);
+  const desdeDate = new Date(hoy.getTime() - 6*24*60*60*1000);
+  const desde = desdeDate.toISOString().slice(0,10);
+  semDesde.value = desde;
+  semHasta.value = hasta;
+}
+
+function generarInformeSemanal(){
+  const dDesde = semDesde.value;
+  const dHasta = semHasta.value;
+  if (!dDesde || !dHasta){
+    alert("Seleccioná fechas 'desde' y 'hasta'.");
+    return;
+  }
+  const from = new Date(dDesde);
+  const to = new Date(dHasta);
+  to.setHours(23,59,59,999);
+
+  const partes = state.entries.filter(e=>{
+    const t = new Date(e.createdAt || e.fecha || Date.now());
+    return t >= from && t <= to;
+  });
+
+  const mensajes = state.messages.filter(m=>{
+    const t = new Date(m.createdAt || Date.now());
+    return t >= from && t <= to;
+  });
+
+  const eventos = state.events.filter(ev=>{
+    if (!ev.fecha) return false;
+    const t = new Date(ev.fecha);
+    return t >= from && t <= to;
+  });
+
+  const fmt = d => {
+    const dd = new Date(d);
+    if (isNaN(dd)) return d;
+    return dd.toLocaleDateString("es-AR");
+  };
+
+  const rangoTexto = `${fmt(from)} al ${fmt(to)}`;
+
+  const totalPartes = partes.length;
+  const totalMensajes = mensajes.length;
+  const totalEventos = eventos.length;
+
+  const seccionesSet = new Set(partes.map(p=>p.sector));
+  const secciones = Array.from(seccionesSet).filter(Boolean).sort();
+
+  let txt = "";
+  txt += `INFORME SEMANAL – Bioparque Municipal de La Plata\n`;
+  txt += `Período: ${rangoTexto}\n`;
+  txt += `\n`;
+  txt += `1. Resumen general\n`;
+  txt += `- Registros de parte de guardias: ${totalPartes}\n`;
+  txt += `- Mensajes internos registrados: ${totalMensajes}\n`;
+  txt += `- Eventos en calendario: ${totalEventos}\n`;
+  if (secciones.length){
+    txt += `- Secciones involucradas: ${secciones.join(", ")}\n`;
+  }
+  txt += `\n`;
+
+  txt += `2. Guardias por día y sección\n`;
+  if (!partes.length){
+    txt += `No se registraron partes de guardia en este período.\n\n`;
+  }else{
+    const porDia = {};
+    for (const p of partes){
+      const fechaClave = new Date(p.createdAt).toLocaleDateString("es-AR");
+      const key = `${fechaClave} (${p.dia || "s/día"})`;
+      if (!porDia[key]) porDia[key] = [];
+      porDia[key].push(p);
+    }
+    const diasOrden = Object.keys(porDia).sort();
+    for (const diaK of diasOrden){
+      txt += `- ${diaK}:\n`;
+      const arr = porDia[diaK].sort((a,b)=> (a.sector||"").localeCompare(b.sector||""));
+      for (const p of arr){
+        txt += `  • ${p.sector || "Sección"} – ${p.cuidador || "s/ responsable"}\n`;
+        if (p.novedades){
+          txt += `    Novedades: ${p.novedades.replace(/\s+/g," ").slice(0,260)}\n`;
+        }
+        if (p.pendientes){
+          txt += `    Pendientes: ${p.pendientes.replace(/\s+/g," ").slice(0,260)}\n`;
+        }
+      }
+    }
+    txt += `\n`;
+  }
+
+  txt += `3. Mensajería interna (resumen)\n`;
+  if (!mensajes.length){
+    txt += `No se registraron mensajes internos en este período.\n\n`;
+  }else{
+    const msSorted = [...mensajes].sort((a,b)=> new Date(a.createdAt) - new Date(b.createdAt));
+    for (const m of msSorted.slice(0,25)){
+      txt += `- ${fmt(m.createdAt)} – ${m.seccion || "General"} – ${m.authorName || "s/autor"}: `;
+      txt += `${m.texto.replace(/\s+/g," ").slice(0,200)}\n`;
+    }
+    if (mensajes.length > 25){
+      txt += `  (Se registran ${mensajes.length} mensajes en total, aquí se muestran los últimos 25.)\n`;
+    }
+    txt += `\n`;
+  }
+
+  txt += `4. Eventos en calendario\n`;
+  if (!eventos.length){
+    txt += `No se registraron eventos de calendario en este período.\n\n`;
+  }else{
+    const evSorted = [...eventos].sort((a,b)=> (a.fecha||"").localeCompare(b.fecha||""));
+    for (const ev of evSorted){
+      txt += `- ${fmt(ev.fecha)} – ${ev.tipo || "Evento"} – ${ev.seccion || "Sección"} `;
+      if (ev.autor) txt += `(${ev.autor})`;
+      txt += `\n`;
+      if (ev.detalle){
+        txt += `  Detalle: ${ev.detalle.replace(/\s+/g," ").slice(0,260)}\n`;
+      }
+    }
+    txt += `\n`;
+  }
+
+  txt += `5. Observaciones para la toma de decisiones (espacio para completar)\n`;
+  txt += `- Riesgos / alertas detectados:\n`;
+  txt += `- Prioridades para la próxima semana:\n`;
+  txt += `- Comunicaciones internas necesarias (a quién, sobre qué):\n`;
+  txt += `- Propuestas de mejora estructural / protocolar:\n`;
+
+  semTexto.value = txt;
+}
+
+// eventos de UI
+guardarBtn.addEventListener("click", guardarEntrada);
+limpiarBtn.addEventListener("click", limpiarFormulario);
+nuevoPeriodoBtn.addEventListener("click", nuevoPeriodo);
+logoutBtn.addEventListener("click", doLogout);
+periodoSelect.addEventListener("change", ()=>{
+  periodoLabel.textContent = periodoSelect.value || "sin definir";
+  renderLista();
+});
+diaFiltro.addEventListener("change", renderLista);
+
+exportBtn.addEventListener("click", exportJson);
+importBtn.addEventListener("click", () => importFile.click());
+importFile.addEventListener("change", handleImportFile);
+clearAllBtn.addEventListener("click", clearAllData);
+
+memoryBtn.addEventListener("click", () => {
+  if (!currentUser || currentUser.rol !== "coord"){
+    alert("Solo coordinación puede usar Memory Base.");
+    return;
+  }
+  const prompt = buildMemoryPrompt();
+  memoryText.value = prompt;
+  memoryPanel.style.display = "block";
+});
+memoryCloseBtn.addEventListener("click", () => {
+  memoryPanel.style.display = "none";
+});
+memoryCopyBtn.addEventListener("click", async () => {
+  try{
+    await navigator.clipboard.writeText(memoryText.value);
+    alert("Prompt copiado al portapapeles.");
+  }catch(e){
+    memoryText.select();
+    alert("Seleccioné el texto. Copialo con Ctrl+C.");
+  }
+});
+
+msgPublicarBtn.addEventListener("click", guardarMensaje);
+evtGuardarBtn.addEventListener("click", guardarEvento);
+semGenerarBtn.addEventListener("click", generarInformeSemanal);
+
+
+// período por calendario
+if (periodoDesde) periodoDesde.addEventListener("change", syncPeriodoFromInputs);
+if (periodoHasta) periodoHasta.addEventListener("change", syncPeriodoFromInputs);
+
+if (diaFecha) diaFecha.addEventListener("change", syncDiaFromFecha);
+if (periodoFecha) periodoFecha.addEventListener("change", syncFechaToPeriodo);
+// init
+renderPeriodos();
+renderLista();
+renderMessages();
+renderEvents();
+setCoordPanelVisible(false);
+
+
+
+// Modal: cierre por delegación (funciona aunque el modal se inserte después del script)
+document.addEventListener("click", (e) => {
+  const t = e.target;
+  if (!t) return;
+  // Botón cerrar
+  if (t.id === "modalCloseBtn" || (t.closest && t.closest("#modalCloseBtn"))){
+    e.preventDefault();
+    e.stopPropagation();
+    try{ closeEntryModal(); }catch(e){}
+    return;
+  }
+  // Click afuera (overlay)
+  const overlay = t.closest ? t.closest("#entryModal") : null;
+  if (overlay && t === overlay){
+    e.preventDefault();
+    e.stopPropagation();
+    try{ closeEntryModal(); }catch(e){}
+    return;
+  }
+}, true);
+
+</script>
+
+  <!-- Modal lectura de parte -->
+  <div class="modal" id="entryModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title" id="modalTitle">Parte</div>
+          <div class="modal-sub" id="modalSub"></div>
+        </div>
+        <button class="btn secondary" id="modalCloseBtn" type="button">Cerrar</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+</body>
+</html>
